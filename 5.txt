@@ -1,0 +1,72 @@
+from collections import deque
+
+# Each state: (M_left, C_left, Boat_side)
+# Boat_side = 0 -> left, 1 -> right
+# Initial state = (3, 3, 0), Goal state = (0, 0, 1)
+
+def is_valid(state):
+    m_left, c_left, _ = state
+    m_right, c_right = 3 - m_left, 3 - c_left
+
+    # Check bounds
+    if not (0 <= m_left <= 3 and 0 <= c_left <= 3):
+        return False
+
+    # Missionaries cannot be outnumbered on either side
+    if (m_left > 0 and c_left > m_left):
+        return False
+    if (m_right > 0 and c_right > m_right):
+        return False
+
+    return True
+
+def get_successors(state):
+    m_left, c_left, boat = state
+    successors = []
+    moves = [(1,0),(2,0),(0,1),(0,2),(1,1)]  # Possible boat moves
+
+    for m, c in moves:
+        if boat == 0:  # Boat on left → move to right
+            new_state = (m_left - m, c_left - c, 1)
+        else:  # Boat on right → move to left
+            new_state = (m_left + m, c_left + c, 0)
+
+        if is_valid(new_state):
+            successors.append(new_state)
+    return successors
+
+def bfs(initial, goal):
+    queue = deque([(initial, [initial])])  # (state, path)
+    visited = set()
+
+    while queue:
+        state, path = queue.popleft()
+        if state == goal:
+            return path
+
+        if state in visited:
+            continue
+        visited.add(state)
+
+        for successor in get_successors(state):
+            if successor not in visited:
+                queue.append((successor, path + [successor]))
+    return None
+
+def print_solution(path):
+    for step in path:
+        m_left, c_left, boat = step
+        m_right, c_right = 3 - m_left, 3 - c_left
+        side = "Left" if boat == 0 else "Right"
+        print(f"Left Bank: M={m_left}, C={c_left} | Right Bank: M={m_right}, C={c_right} | Boat: {side}")
+    print("\nSolved in", len(path)-1, "moves.")
+
+if __name__ == "__main__":
+    initial_state = (3, 3, 0)
+    goal_state = (0, 0, 1)
+
+    solution = bfs(initial_state, goal_state)
+    if solution:
+        print_solution(solution)
+    else:
+        print("No solution found")

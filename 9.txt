@@ -1,0 +1,71 @@
+import itertools
+
+def travelling_salesman_problem(graph, start=0):
+    """
+    Solves the Travelling Salesman Problem using Dynamic Programming (Held-Karp Algorithm).
+    :param graph: 2D matrix representing distances between nodes
+    :param start: starting node index
+    :return: (min_cost, optimal_path)
+    """
+    n = len(graph)
+    all_nodes = set(range(n))
+    
+    # DP table: dp[mask][i] = minimum cost to visit subset 'mask' ending at city 'i'
+    dp = {}
+    parent = {}
+    
+    # Initialize base cases (distance from start to each node)
+    for i in range(n):
+        if i == start:
+            continue
+        dp[(1 << i, i)] = graph[start][i]
+        parent[(1 << i, i)] = start
+
+    # Iterate over subsets of increasing size
+    for size in range(2, n):
+        for subset in itertools.combinations([i for i in range(n) if i != start], size):
+            mask = 0
+            for bit in subset:
+                mask |= 1 << bit
+            # Try ending at different nodes
+            for j in subset:
+                prev_mask = mask & ~(1 << j)
+                dp[(mask, j)], parent[(mask, j)] = min(
+                    (dp[(prev_mask, k)] + graph[k][j], k)
+                    for k in subset if k != j
+                )
+
+    # Close the cycle back to start
+    mask = (1 << n) - 1 - (1 << start)
+    min_cost, last_node = min(
+        (dp[(mask, j)] + graph[j][start], j)
+        for j in range(n) if j != start
+    )
+
+    # Reconstruct path
+    path = [start]
+    current_mask, current_node = mask, last_node
+    while current_node != start:
+        path.append(current_node)
+        next_node = parent[(current_mask, current_node)]
+        current_mask &= ~(1 << current_node)
+        current_node = next_node
+    path.append(start)
+    path.reverse()
+
+    return min_cost, path
+
+
+# Example usage:
+if __name__ == "__main__":
+    # Distance matrix (graph[i][j] = distance from i to j)
+    graph = [
+        [0, 10, 15, 20],
+        [10, 0, 35, 25],
+        [15, 35, 0, 30],
+        [20, 25, 30, 0]
+    ]
+    
+    cost, path = travelling_salesman_problem(graph)
+    print("Minimum cost:", cost)
+    print("Optimal path:", path)

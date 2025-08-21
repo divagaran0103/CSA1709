@@ -1,0 +1,52 @@
+# Map Coloring Problem using CSP (Backtracking)
+
+# Define the map as adjacency list
+graph = {
+    "WA": ["NT", "SA"],
+    "NT": ["WA", "SA", "Q"],
+    "SA": ["WA", "NT", "Q", "NSW", "V"],
+    "Q":  ["NT", "SA", "NSW"],
+    "NSW":["Q", "SA", "V"],
+    "V":  ["SA", "NSW", "T"],
+    "T":  ["V"]
+}
+
+# Available colors
+colors = ["Red", "Green", "Blue"]
+
+def is_valid(node, color, assignment, graph):
+    """Check if assigning 'color' to 'node' is valid."""
+    for neighbor in graph[node]:
+        if neighbor in assignment and assignment[neighbor] == color:
+            return False
+    return True
+
+def backtrack(assignment, graph, colors):
+    """Backtracking search for CSP solution."""
+    # If assignment complete
+    if len(assignment) == len(graph):
+        return assignment
+
+    # Select unassigned variable (MRV heuristic can improve)
+    unassigned = [node for node in graph if node not in assignment]
+    node = unassigned[0]
+
+    for color in colors:
+        if is_valid(node, color, assignment, graph):
+            assignment[node] = color
+            result = backtrack(assignment, graph, colors)
+            if result:
+                return result
+            assignment.pop(node)
+
+    return None
+
+
+if __name__ == "__main__":
+    solution = backtrack({}, graph, colors)
+    if solution:
+        print("Solution Found:")
+        for region, color in solution.items():
+            print(f"{region} → {color}")
+    else:
+        print("No solution exists!")

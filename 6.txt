@@ -1,0 +1,32 @@
+import random
+
+def vacuum_world():
+    # Initial states: room A and room B (Dirty or Clean)
+    state = {"A": random.choice(["Dirty", "Clean"]),
+             "B": random.choice(["Dirty", "Clean"])}
+
+    # Start position of vacuum
+    vacuum_position = random.choice(["A", "B"])
+
+    print("Initial State:", state, "| Vacuum at:", vacuum_position)
+
+    steps = 0
+    while state["A"] == "Dirty" or state["B"] == "Dirty":
+        steps += 1
+        print(f"\nStep {steps}: Vacuum in {vacuum_position}, State: {state}")
+
+        if state[vacuum_position] == "Dirty":
+            print(f"Vacuum cleans {vacuum_position}")
+            state[vacuum_position] = "Clean"
+        else:
+            # Move to the other room
+            vacuum_position = "B" if vacuum_position == "A" else "A"
+            print(f"Vacuum moves to {vacuum_position}")
+
+    print("\nFinal State:", state, "| All rooms clean!")
+    print("Total steps taken:", steps)
+
+
+# Run the vacuum world
+if __name__ == "__main__":
+    vacuum_world()
